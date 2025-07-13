@@ -80,7 +80,7 @@ h1 {
   gap: var(--space-md);
   margin-bottom: var(--space-md);
   overflow-x: scroll;
-  margin-bottom: 5px;
+  padding-bottom: 5px;
 }
 
 ::-webkit-scrollbar {

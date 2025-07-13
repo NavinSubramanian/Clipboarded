@@ -4,14 +4,17 @@
 
 ---
 
-## Version Updates
+## Latest Version Updates
 
-**v1.1.0 – July 2025**
+**v1.2.0 – Security Update (July 2025)**  
+- 🔐 **Protected Fields**: Mark fields as protected so their values remain hidden by default.  
+- 👁️ **Password-Gated Reveal**: Eye icon reveals value after password validation.  
+- 🚫 **Copy Blocked Until Unlocked**: Protected fields hide the copy button unless unlocked.  
+- 🛡️ **Password Management**: New ⚙️ Settings modal allows users to set/change their local password.  
+- 📤 **Export to JSON**: Download saved fields to a `.json` file.  
+- 📥 **Import from JSON**: Restore fields from a backup file.  
 
-- 📤 **Export to JSON**: Download all saved fields as a JSON file.
-- 📥 **Import from JSON**: Restore fields from a backup JSON file.
-- 🔍 **Search Enhanced**: Improved search across labels and values.
-- 🖱️ **UI Improvements**: Better scroll behavior for long fields and buttons.
+👉 [View all releases](https://github.com/NavinSubramanian/Clipboarded/releases)
 
 ---
 

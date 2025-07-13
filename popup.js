@@ -12,6 +12,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const exportBtn = document.getElementById('export');
     const importBtn = document.getElementById('import');
     const importFileInput = document.getElementById('importFile');
+    const openSettingsBtn = document.getElementById('openSettings');
+    const settingsModal = document.getElementById('settingsModal');
+    const cancelSettingsBtn = document.getElementById('cancelSettings');
+    const savePasswordBtn = document.getElementById('savePassword');
+    const passwordInput = document.getElementById('passwordInput');
+
+    let PASSWORD = ''; // Default fallback
+
 
     // State variables
     let fields = [];
@@ -19,6 +27,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Load saved fields from storage
     loadFields();
+
+    chrome.storage.local.get(['password'], (result) => {
+        if (result.password) {
+            PASSWORD = result.password;
+        }
+    });
 
     // Event Listeners
     addFieldBtn.addEventListener('click', addNewField);
@@ -31,6 +45,25 @@ document.addEventListener('DOMContentLoaded', function () {
     importFileInput.addEventListener('change', handleImport);
 
     // Functions
+
+    openSettingsBtn.addEventListener('click', () => {
+        settingsModal.classList.add('show');
+        passwordInput.value = PASSWORD || '';
+    });
+
+    cancelSettingsBtn.addEventListener('click', () => {
+        settingsModal.classList.remove('show');
+    });
+
+    savePasswordBtn.addEventListener('click', () => {
+        PASSWORD = passwordInput.value;
+        chrome.storage.local.set({ password: PASSWORD }, () => {
+            showNotification('Password saved!');
+            settingsModal.classList.remove('show');
+        });
+    });
+
+
     function loadFields() {
         chrome.storage.local.get(['fields'], function (result) {
             if (result.fields && result.fields.length > 0) {
@@ -67,29 +100,66 @@ document.addEventListener('DOMContentLoaded', function () {
           <div class="field-header">
             <span class="field-title">${field.label}</span>
             <div class="field-buttons">
-              <button class="btn btn-copy" aria-label="Copy ${field.label}" title="Copy to clipboard">📋</button>
-              <button class="btn btn-delete" aria-label="Delete ${field.label}" title="Delete field">❌</button>
+                ${!field.protected ? `
+                    <button class="btn btn-copy" aria-label="Copy ${field.label}" title="Copy to clipboard">📋</button>
+                ` : ''}
+                <button class="btn btn-delete" aria-label="Delete ${field.label}" title="Delete field">❌</button>
             </div>
           </div>
-          <div class="field-content">
-            <div class="field-value">${field.value}</div>
-          </div>
+         <div class="field-content">
+            <div class="field-value">
+                ${field.protected ? '••••••••' : field.value}
+                ${field.protected ? '<button class="btn btn-eye" title="Reveal value">👁️</button>' : ''}
+            </div>
+        </div>
         `;
 
             // Add event listeners for copy and delete buttons
             const copyBtn = fieldDiv.querySelector('.btn-copy');
             const deleteBtn = fieldDiv.querySelector('.btn-delete');
 
-            copyBtn.addEventListener('click', function () {
-                copyToClipboard(field.value);
-                showNotification('Copied to clipboard!');
-                copyBtn.classList.add('copied');
-                setTimeout(() => copyBtn.classList.remove('copied'), 500);
-            });
+            if (copyBtn) {
+                copyBtn.addEventListener('click', function () {
+                    copyToClipboard(field.value);
+                    showNotification('Copied to clipboard!');
+                    copyBtn.classList.add('copied');
+                    setTimeout(() => copyBtn.classList.remove('copied'), 500);
+                });
+            }
 
             deleteBtn.addEventListener('click', function () {
                 showDeleteConfirmation(field.id);
             });
+
+            if (field.protected) {
+                const eyeBtn = fieldDiv.querySelector('.btn-eye');
+                eyeBtn.addEventListener('click', function () {
+                    const valueDiv = fieldDiv.querySelector('.field-value');
+                    const enteredPassword = prompt('Enter password to view this field:');
+                    if (enteredPassword == PASSWORD) {
+                        valueDiv.classList.remove('protected');
+                        valueDiv.classList.add('revealed');
+                        valueDiv.textContent = field.value;
+
+                        const copyBtn = document.createElement('button');
+                        copyBtn.className = 'btn btn-copy';
+                        copyBtn.title = 'Copy to clipboard';
+                        copyBtn.innerText = '📋';
+
+                        copyBtn.addEventListener('click', () => {
+                            copyToClipboard(field.value);
+                            showNotification('Copied to clipboard!');
+                            copyBtn.classList.add('copied');
+                            setTimeout(() => copyBtn.classList.remove('copied'), 500);
+                        });
+
+                        const buttonContainer = fieldDiv.querySelector('.field-buttons');
+                        buttonContainer.insertBefore(copyBtn, buttonContainer.firstChild);
+                    } else {
+                        showNotification('Incorrect password!');
+                    }
+                });
+            }
         } else {
             // Editable field view
             fieldDiv.innerHTML = `
@@ -101,6 +171,12 @@ document.addEventListener('DOMContentLoaded', function () {
             <label class="input-label">Value</label>
             <input type="text" class="field-value-input" value="${field.value}" placeholder="Value">
           </div>
+          <div class="input-group checkbox-group">
+            <input type="checkbox" id="protec" class="field-protected-checkbox" ${field.protected ? 'checked' : ''}>
+            <label class="input-label" for="protec">
+                Protected
+            </label>
+        </div>
         `;
         }
 
@@ -131,7 +207,8 @@ document.addEventListener('DOMContentLoaded', function () {
             label: '',
             value: '',
             locked: false,
-            isDefault: false
+            isDefault: false,
+            protected: false
         };
 
         fields.push(newField);
@@ -152,6 +229,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const id = fieldElement.dataset.id;
             const labelInput = fieldElement.querySelector('.field-label-input');
             const valueInput = fieldElement.querySelector('.field-value-input');
+            const protectedCheckbox = fieldElement.querySelector('.field-protected-checkbox');
 
             if (labelInput && valueInput) {
                 const fieldIndex = fields.findIndex(f => f.id === id);
@@ -159,6 +237,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (fieldIndex !== -1) {
                     fields[fieldIndex].label = labelInput.value;
                     fields[fieldIndex].value = valueInput.value;
+                    fields[fieldIndex].protected = protectedCheckbox?.checked || false;
                     fields[fieldIndex].locked = true; // Lock the field after saving
                 }
             }
@@ -170,6 +249,7 @@ document.addEventListener('DOMContentLoaded', function () {
             showNotification('Fields saved successfully!');
         });
     }
+
 
     function showDeleteConfirmation(fieldId) {
         fieldToDelete = fieldId;
