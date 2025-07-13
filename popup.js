@@ -9,6 +9,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const cancelDeleteBtn = document.getElementById('cancelDelete');
     const confirmDeleteBtn = document.getElementById('confirmDelete');
     const searchInput = document.getElementById('searchInput');
+    const exportBtn = document.getElementById('export');
+    const importBtn = document.getElementById('import');
+    const importFileInput = document.getElementById('importFile');
 
     // State variables
     let fields = [];
@@ -23,6 +26,9 @@ document.addEventListener('DOMContentLoaded', function () {
     cancelDeleteBtn.addEventListener('click', hideConfirmationModal);
     confirmDeleteBtn.addEventListener('click', confirmDeleteField);
     searchInput.addEventListener('input', handleSearch);
+    exportBtn.addEventListener('click', handleExport);
+    importBtn.addEventListener('click', () => importFileInput.click());
+    importFileInput.addEventListener('change', handleImport);
 
     // Functions
     function loadFields() {
@@ -210,4 +216,46 @@ document.addEventListener('DOMContentLoaded', function () {
     function generateId() {
         return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
     }
+
+    function handleExport() {
+        const dataStr = JSON.stringify(fields, null, 2);
+        const blob = new Blob([dataStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'clipboarded_data.json';
+        a.click();
+
+        URL.revokeObjectURL(url);
+    }
+
+    function handleImport(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            try {
+                const importedFields = JSON.parse(e.target.result);
+                if (Array.isArray(importedFields)) {
+                    fields = importedFields.map(field => ({
+                        ...field,
+                        id: field.id || generateId(), // ensure id exists
+                    }));
+                    chrome.storage.local.set({ fields: fields }, () => {
+                        renderFields();
+                        showNotification('Fields imported successfully!');
+                    });
+                } else {
+                    throw new Error("Invalid format");
+                }
+            } catch (err) {
+                console.error("Import error:", err);
+                showNotification('Invalid JSON file');
+            }
+        };
+        reader.readAsText(file);
+    }
+
 });

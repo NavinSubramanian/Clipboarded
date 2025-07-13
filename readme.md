@@ -4,6 +4,17 @@
 
 ---
 
+## Version Updates
+
+**v1.1.0 – July 2025**
+
+- 📤 **Export to JSON**: Download all saved fields as a JSON file.
+- 📥 **Import from JSON**: Restore fields from a backup JSON file.
+- 🔍 **Search Enhanced**: Improved search across labels and values.
+- 🖱️ **UI Improvements**: Better scroll behavior for long fields and buttons.
+
+---
+
 ## ✨ Features
 
 - ✅ **Predefined Fields**: Starts with basic fields like Name and Phone Number.
@@ -18,7 +29,7 @@
 
 ## 📸 Preview
 
-![ClipBoarded Preview](images/preview.png)  
+![ClipBoarded Preview](images/preview.png)
 
 ---
 
@@ -49,18 +60,18 @@ clipboarded/
 
 ## 🛠️ Built With
 
-- **HTML5** – Clean and structured markup  
-- **CSS3** – Sleek, modern dark UI with scrollable sections  
-- **JavaScript (Vanilla)** – Logic for storage, DOM interaction, and clipboard  
+- **HTML5** – Clean and structured markup
+- **CSS3** – Sleek, modern dark UI with scrollable sections
+- **JavaScript (Vanilla)** – Logic for storage, DOM interaction, and clipboard
 - **Chrome Extension API v3** – Modern and secure extension architecture
 
 ---
 
 ## 💡 Future Improvements
 
-- 🔐 Optional field encryption  
-- ☁️ Chrome sync support across devices  
-- 🧹 Context menu integration for even faster access  
+- 🔐 Optional field encryption
+- ☁️ Chrome sync support across devices
+- 🧹 Context menu integration for even faster access
 - 🌐 Autofill support on websites (optional toggle)
 
 ---
@@ -69,10 +80,10 @@ clipboarded/
 
 Want to improve ClipBoarded? Contributions are welcome!
 
-1. Fork the repository  
-2. Create your feature branch: `git checkout -b feature/your-feature-name`  
-3. Commit your changes: `git commit -m 'Add some feature'`  
-4. Push to the branch: `git push origin feature/your-feature-name`  
+1. Fork the repository
+2. Create your feature branch: `git checkout -b feature/your-feature-name`
+3. Commit your changes: `git commit -m 'Add some feature'`
+4. Push to the branch: `git push origin feature/your-feature-name`
 5. Open a Pull Request
 
 Please follow existing code style and conventions when contributing.
@@ -94,4 +105,3 @@ MIT License © 2025 [Navin](https://github.com/NavinSubramanian/)
 ---
 
 > ⚡ ClipBoarded – Because your info should always be one click away.
-
