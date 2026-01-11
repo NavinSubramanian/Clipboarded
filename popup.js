@@ -18,8 +18,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const currentPasswordInput = document.getElementById('currentPasswordInput');
     const newPasswordInput = document.getElementById('newPasswordInput');
     const wipeProtectedBtn = document.getElementById('wipeProtected');
+    const themeToggle = document.getElementById('themeToggle');
+    const body = document.body;
 
 
+    let activeTagFilter = null; // Filtering the tags
     let PASSWORD = ''; // Default fallback
     let notificationTimeout = null;  // For the notification to disappear 
 
@@ -37,6 +40,13 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    chrome.storage.local.get(['theme'], (result) => {
+        if (result.theme === 'light') {
+            body.classList.add('light-theme');
+            updateIcon();
+        }
+    });
+
     chrome.storage.local.get(['hasSeenOnboarding'], (result) => {
         if (!result.hasSeenOnboarding && !PASSWORD) {
             showNotification('🔒 Set a password in Settings to enable protected fields');
@@ -51,6 +61,12 @@ document.addEventListener('DOMContentLoaded', function () {
     cancelDeleteBtn.addEventListener('click', hideConfirmationModal);
     confirmDeleteBtn.addEventListener('click', confirmDeleteField);
     searchInput.addEventListener('input', handleSearch);
+    searchInput.addEventListener('keydown', e => {
+        if (e.key === 'Backspace' && searchInput.value === '') {
+            renderFields();
+        }
+    });
+
     exportBtn.addEventListener('click', () => {
         if (!verifyPasswordOrFail('export your data')) return;
         handleExport();
@@ -66,9 +82,17 @@ document.addEventListener('DOMContentLoaded', function () {
         newPasswordInput.value = '';
     });
 
-
     cancelSettingsBtn.addEventListener('click', () => {
         settingsModal.classList.remove('show');
+    });
+
+    themeToggle.addEventListener('click', () => {
+        body.classList.toggle('light-theme');
+
+        const currentTheme = body.classList.contains('light-theme') ? 'light' : 'dark';
+        chrome.storage.local.set({ theme: currentTheme });
+
+        updateIcon();
     });
 
     savePasswordBtn.addEventListener('click', () => {
@@ -125,6 +149,10 @@ document.addEventListener('DOMContentLoaded', function () {
         chrome.storage.local.get(['fields'], function (result) {
             if (result.fields && result.fields.length > 0) {
                 fields = result.fields;
+                fields.forEach(f => {
+                    if (!Array.isArray(f.tags)) f.tags = [];
+                });
+
                 renderFields();
             } else {
                 // Add default fields
@@ -143,12 +171,18 @@ document.addEventListener('DOMContentLoaded', function () {
         const pinnedFields = fields.filter(f => f.pinned);
         const normalFields = fields.filter(f => !f.pinned);
 
-        [...pinnedFields, ...normalFields].forEach(field => {
-            const fieldElement = createFieldElement(field);
-            fieldsContainer.appendChild(fieldElement);
-        });
-    }
+        [...pinnedFields, ...normalFields]
+            .filter(field => {
+                if (!activeTagFilter) return true;
+                return field.tags?.includes(activeTagFilter);
+            })
+            .forEach(field => {
+                const fieldElement = createFieldElement(field);
+                fieldsContainer.appendChild(fieldElement);
+            });
 
+        renderTagFilters();
+    }
 
     function createFieldElement(field) {
         const fieldDiv = document.createElement('div');
@@ -160,6 +194,7 @@ document.addEventListener('DOMContentLoaded', function () {
             fieldDiv.innerHTML = `
           <div class="field-header">
             <span class="field-title">${field.label}</span>
+            <div class="tags-container readonly"></div>
             <div class="field-buttons">
                 <button
                     class="fav-btn btn-star ${field.pinned ? 'active' : ''}"
@@ -186,6 +221,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const copyBtn = fieldDiv.querySelector('.btn-copy');
             const deleteBtn = fieldDiv.querySelector('.btn-delete');
             const starBtn = fieldDiv.querySelector('.btn-star');
+            const readonlyTagsContainer = fieldDiv.querySelector('.tags-container.readonly');
 
             if (starBtn) {
                 starBtn.addEventListener('click', () => {
@@ -245,9 +281,30 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 });
             }
+
+            if (readonlyTagsContainer) {
+                renderTags(readonlyTagsContainer, field, false);
+            }
         } else {
             // Editable field view
             fieldDiv.innerHTML = `
+            <div class="field-header editable-header">
+                <span class="field-title">New Field</span>
+                <button class="btn btn-close-field" title="Cancel">×</button>
+            </div>
+            <div class="input-group tags-group">
+                <label class="input-label">Tags</label>
+
+                <div class="tags-container">
+                    <!-- tags will be injected here -->
+                    <input
+                    type="text"
+                    class="tag-input"
+                    placeholder="Add tag"
+                    maxlength="15"
+                    />
+                </div>
+            </div>
           <div class="input-group">
             <label class="input-label">Label</label>
             <input type="text" class="field-label-input" value="${field.label}" placeholder="Label" ${field.isDefault ? 'readonly' : ''}>
@@ -269,6 +326,12 @@ document.addEventListener('DOMContentLoaded', function () {
         `;
 
             const saveFieldBtn = fieldDiv.querySelector('.btn-save-field');
+            const editableTagsContainer = fieldDiv.querySelector('.tags-container');
+            const closeBtn = fieldDiv.querySelector('.btn-close-field');
+
+            if (editableTagsContainer) {
+                renderTags(editableTagsContainer, field, true);
+            }
 
             saveFieldBtn.addEventListener('click', () => {
                 const labelInput = fieldDiv.querySelector('.field-label-input');
@@ -281,27 +344,41 @@ document.addEventListener('DOMContentLoaded', function () {
                 fields[fieldIndex].label = labelInput.value;
                 fields[fieldIndex].value = valueInput.value;
 
-                if(fields[fieldIndex].label === ''){
+                if (fields[fieldIndex].label === '') {
                     showNotification('Please enter a Label before saving');
                 }
-                else if(fields[fieldIndex].value === ''){
+                else if (fields[fieldIndex].value === '') {
                     showNotification('Please enter a Value before saving');
                 }
-                else{
+                else {
                     if (protectedCheckbox?.checked && !PASSWORD) {
                         showNotification('Set a password to use protected fields');
                         fields[fieldIndex].protected = false;
                     } else {
                         fields[fieldIndex].protected = protectedCheckbox?.checked || false;
                     }
-    
+
                     fields[fieldIndex].locked = true; // 🔒 ONLY THIS FIELD
-    
+
+                    const tagChips = fieldDiv.querySelectorAll('.tag-chip');
+
+                    fields[fieldIndex].tags = [...tagChips].map(chip =>
+                        chip.firstChild.textContent.toLowerCase()
+                    );
+
                     chrome.storage.local.set({ fields }, () => {
                         renderFields();
                         showNotification('Field saved');
                     });
                 }
+            });
+
+            closeBtn.addEventListener('click', () => {
+                // Remove this new field from the DOM
+                fieldDiv.remove();
+
+                // Also remove it from the fields array if it wasn't saved yet
+                fields = fields.filter(f => f.id !== field.id);
             });
         }
 
@@ -318,7 +395,12 @@ document.addEventListener('DOMContentLoaded', function () {
             const value = fieldElement.querySelector('.field-value')?.textContent.toLowerCase() ||
                 fieldElement.querySelector('.field-value-input')?.value.toLowerCase() || '';
 
-            if (label.includes(searchTerm) || value.includes(searchTerm)) {
+            const id = fieldElement.dataset.id;
+            const fieldObj = fields.find(f => f.id === id);
+            // const tagsText = fieldObj?.tags?.join(' ') || '';
+
+            if (label.includes(searchTerm) ||
+                value.includes(searchTerm)) {
                 fieldElement.classList.remove('hidden');
             } else {
                 fieldElement.classList.add('hidden');
@@ -334,7 +416,8 @@ document.addEventListener('DOMContentLoaded', function () {
             locked: false,
             isDefault: false,
             protected: false,
-            pinned: false
+            pinned: false,
+            tags: []
         };
 
         fields.push(newField);
@@ -381,7 +464,6 @@ document.addEventListener('DOMContentLoaded', function () {
             showNotification('Fields saved successfully!');
         });
     }
-
 
     function showDeleteConfirmation(fieldId) {
         fieldToDelete = fieldId;
@@ -516,4 +598,90 @@ document.addEventListener('DOMContentLoaded', function () {
         );
     }
 
+    function renderTags(container, field, editable = false) {
+        container.innerHTML = '';
+
+        field.tags.forEach(tag => {
+            const chip = document.createElement('div');
+            chip.className = 'tag-chip';
+            chip.textContent = tag;
+
+            if (editable) {
+                const remove = document.createElement('span');
+                remove.className = 'remove-tag';
+                remove.textContent = '×';
+
+                remove.onclick = () => {
+                    field.tags = field.tags.filter(t => t !== tag);
+                    renderTags(container, field, true);
+                };
+
+                chip.appendChild(remove);
+            }
+
+            container.appendChild(chip);
+        });
+
+        if (editable && field.tags.length < 5) {
+            const input = document.createElement('input');
+            input.className = 'tag-input';
+            input.placeholder = 'Add tag';
+
+            input.addEventListener('keydown', e => {
+                if (e.key === 'Enter' || e.key === ',') {
+                    e.preventDefault();
+
+                    const value = input.value.trim().toLowerCase();
+                    if (!value || field.tags.includes(value)) return;
+
+                    field.tags.push(value);
+                    input.value = '';
+                    renderTags(container, field, true);
+                }
+            });
+
+            container.appendChild(input);
+        }
+    }
+
+    function renderTagFilters() {
+        const bar = document.getElementById('tagFilterBar');
+        if (!bar) return;
+
+        bar.innerHTML = '';
+
+        const tags = new Set();
+        fields.forEach(f => f.tags?.forEach(t => tags.add(t)));
+
+        [...tags].forEach(tag => {
+            const btn = document.createElement('div');
+            btn.className = 'tag-filter';
+            btn.textContent = tag;
+
+            if (tag === activeTagFilter) {
+                btn.classList.add('active');
+            }
+
+            btn.onclick = () => {
+                activeTagFilter = (activeTagFilter === tag) ? null : tag;
+                renderFields();
+            };
+
+            bar.appendChild(btn);
+        });
+
+        if (tags.size === 0) {
+            activeTagFilter = null;
+        }
+
+    }
+
+    function updateIcon() {
+        const icon = themeToggle.querySelector('i');
+        if (body.classList.contains('light-theme')) {
+            icon.className = 'fa-solid fa-sun';
+        } else {
+            icon.className = 'fa-solid fa-moon';
+        }
+    }
 });

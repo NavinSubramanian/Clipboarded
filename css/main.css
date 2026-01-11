@@ -1,3 +1,4 @@
+/* Dark theme (default) */
 :root {
   --bg-primary: #121212;
   --bg-secondary: #1e1e1e;
@@ -6,6 +7,8 @@
   --text-primary: #f1f1f1;
   --text-secondary: #b0b0b0;
 
+  --btn-setting: #ffffff;
+  
   --accent-blue: #00bcd4;
   --accent-green: #8bc34a;
   --accent-red: #f44336;
@@ -27,6 +30,26 @@
   --transition-fast: 0.15s ease;
   --transition-medium: 0.25s ease;
   --transition-slow: 0.35s ease;
+}
+
+/* Light theme overrides */
+body.light-theme {
+  --bg-primary: #f0f2f5; /* main background */
+  --bg-secondary: #ffffff; /* field background */
+  --bg-tertiary: #f9f9f9; /* secondary panels / modals */
+
+  --text-primary: #1a1a1a; /* main text */
+  --text-secondary: #555555; /* secondary text */
+
+  --btn-setting: #333;
+
+  --accent-blue: #007acc; /* clipboard / copy buttons */
+  --accent-green: #28a745; /* pinned / success highlights */
+  --accent-red: #dc3545; /* delete / danger */
+
+  --glow-blue: rgba(33, 150, 243, 0.3);
+  --glow-green: rgba(76, 175, 80, 0.3);
+  --glow-red: rgba(229, 57, 53, 0.3);
 }
 
 * {
@@ -53,12 +76,11 @@ body {
 }
 
 header {
-  margin-bottom: var(--space-lg);
   text-align: center;
 }
 
 h1 {
-  font-size: 1.8rem;
+  font-size: 1.35rem;
   font-weight: 600;
   margin-bottom: var(--space-xs);
   background: linear-gradient(90deg, var(--accent-blue), var(--accent-green));
@@ -99,4 +121,44 @@ h1 {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--accent-green);
+}
+
+.tag-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px 8px;
+}
+
+.tag-filter {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  background: #1f1f1f;
+  border: 1px solid #333;
+  color: #ccc;
+  cursor: pointer;
+}
+
+.tag-filter.active {
+  background: #3a3a3a;
+  color: #fff;
+  border-color: #555;
+}
+
+footer {
+  text-align: center;
+  font-size: 12px;
+  color: #888;
+  margin-top: 10px;
+  padding: 5px 0;
+
+  a {
+    color: #aaa;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
 }

@@ -6,24 +6,20 @@
 
 ## Latest Version Updates
 
-**v1.3.0 – Security & UX Improvements (Jan 2026)**  
-- 🔐 **Improved Password System**  
-  - Password setup and reset flow redesigned to be more secure  
-  - Prevents unauthorized password changes  
-  - Clear onboarding prompt for first-time users to set a password  
+**v1.4.0 – Organization Update (Jan 2026)**  
+- 🏷️ **Added Tags**  
+  - Now you can add tags to the field and save them
+  - Near the search filter you can view the different tags present
+  - Click them to filter
 
-- ⭐ **Pin Important Fields**  
-  - Pin frequently used fields to keep them always at the top  
-  - Visual star indicator for pinned vs unpinned fields  
+- 😎 **Better Life Update**  
+  - Added close button when creating a field to close the prompt
+  - Made the save button bigger
+  - Few more UI modification
 
-- 📤 **Password-Protected Export**  
-  - Exporting data now requires password verification  
-  - Prevents accidental or unauthorized data leaks  
-
-- 🎨 **UI & Layout Enhancements**  
-  - Improved field layout and spacing  
-  - Consistent icon set across the extension  
-  - Fixed icon rendering issues
+- 📤 **Future Enhancement on Development**
+  - The feature to toggle between Light and Dark theme (For any Light theme freaks!)
+  - Testing on the UI
 
 👉 [View all releases](https://github.com/NavinSubramanian/Clipboarded/releases)
 
@@ -37,6 +33,7 @@
 - 👁️ **Password-Gated Reveal**: Reveal protected values only after authentication.
 - 📤 **Secure Export**: Export data only after password verification.
 - ⭐ **Pin Fields**: Keep important fields pinned at the top.
+- 🏷️ **Tags**: You can create tags to the field and filter them by that for easy access.
 - 🔐 **Locked After Save**: Fields lock automatically after saving.
 - 📋 **One-Click Copy**: Copy values instantly when unlocked.
 - ❌ **Delete Fields**: Remove unwanted fields safely.
@@ -47,7 +44,11 @@
 
 ## 📸 Preview
 
-![ClipBoarded Preview](images/preview.png)
+- Field Creation
+![ClipBoarded Preview1](images/addField.png)
+
+- Filter by Tags
+![ClipBoarded Preview2](images/filter.png)
 
 ---
 
@@ -65,6 +66,7 @@
 
 ```
 clipboarded/
+├── assets/              # Needed assests like fontawesome icons
 ├── images/              # All the needed images
 ├── css/                 # Contains the style sheets
 ├── popup.html           # Main popup UI
@@ -88,6 +90,7 @@ clipboarded/
 
 ## 💡 Future Improvements
 
+- 🌙 Dark/Light theme toggle [In Development]
 - 🔐 Optional field encryption
 - ☁️ Chrome sync support across devices
 - 🧹 Context menu integration for even faster access
