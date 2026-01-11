@@ -334,3 +334,35 @@ input::placeholder {
 #settingsModal h2 {
   margin-bottom: 0 !important;
 }
+
+.btn-star {
+  opacity: 0.6;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+.btn-star.active {
+  opacity: 1;
+  color: yellow;
+  transform: scale(1.1);
+}
+
+.btn-star:hover {
+  opacity: 1;
+}
+
+.fav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 5px;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: "Poppins", sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-medium);
+  background-color: transparent;
+  color: var(--text-primary);
+  gap: var(--space-sm);
+}

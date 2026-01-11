@@ -2,7 +2,6 @@ document.addEventListener('DOMContentLoaded', function () {
     // DOM Elements
     const fieldsContainer = document.getElementById('fieldsContainer');
     const addFieldBtn = document.getElementById('addField');
-    const saveBtn = document.getElementById('save');
     const notification = document.getElementById('notification');
     const notificationText = document.getElementById('notificationText');
     const confirmationModal = document.getElementById('confirmationModal');
@@ -16,9 +15,13 @@ document.addEventListener('DOMContentLoaded', function () {
     const settingsModal = document.getElementById('settingsModal');
     const cancelSettingsBtn = document.getElementById('cancelSettings');
     const savePasswordBtn = document.getElementById('savePassword');
-    const passwordInput = document.getElementById('passwordInput');
+    const currentPasswordInput = document.getElementById('currentPasswordInput');
+    const newPasswordInput = document.getElementById('newPasswordInput');
+    const wipeProtectedBtn = document.getElementById('wipeProtected');
+
 
     let PASSWORD = ''; // Default fallback
+    let notificationTimeout = null;  // For the notification to disappear 
 
 
     // State variables
@@ -34,13 +37,24 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    chrome.storage.local.get(['hasSeenOnboarding'], (result) => {
+        if (!result.hasSeenOnboarding && !PASSWORD) {
+            showNotification('🔒 Set a password in Settings to enable protected fields');
+
+            chrome.storage.local.set({ hasSeenOnboarding: true });
+        }
+    });
+
+
     // Event Listeners
     addFieldBtn.addEventListener('click', addNewField);
-    saveBtn.addEventListener('click', saveFields);
     cancelDeleteBtn.addEventListener('click', hideConfirmationModal);
     confirmDeleteBtn.addEventListener('click', confirmDeleteField);
     searchInput.addEventListener('input', handleSearch);
-    exportBtn.addEventListener('click', handleExport);
+    exportBtn.addEventListener('click', () => {
+        if (!verifyPasswordOrFail('export your data')) return;
+        handleExport();
+    });
     importBtn.addEventListener('click', () => importFileInput.click());
     importFileInput.addEventListener('change', handleImport);
 
@@ -48,20 +62,63 @@ document.addEventListener('DOMContentLoaded', function () {
 
     openSettingsBtn.addEventListener('click', () => {
         settingsModal.classList.add('show');
-        passwordInput.value = PASSWORD || '';
+        currentPasswordInput.value = '';
+        newPasswordInput.value = '';
     });
+
 
     cancelSettingsBtn.addEventListener('click', () => {
         settingsModal.classList.remove('show');
     });
 
     savePasswordBtn.addEventListener('click', () => {
-        PASSWORD = passwordInput.value;
+        const current = currentPasswordInput.value;
+        const next = newPasswordInput.value;
+
+        if (!next) {
+            showNotification('New password cannot be empty');
+            return;
+        }
+
+        // Case 1: No password set yet
+        if (!PASSWORD) {
+            PASSWORD = next;
+            chrome.storage.local.set({ password: PASSWORD }, () => {
+                showNotification('Password set successfully');
+                settingsModal.classList.remove('show');
+            });
+            return;
+        }
+
+        // Case 2: Password exists → must verify
+        if (current !== PASSWORD) {
+            showNotification('Incorrect current password');
+            return;
+        }
+
+        PASSWORD = next;
         chrome.storage.local.set({ password: PASSWORD }, () => {
-            showNotification('Password saved!');
+            showNotification('Password changed successfully');
             settingsModal.classList.remove('show');
         });
     });
+
+    wipeProtectedBtn.addEventListener('click', () => {
+        const firstConfirm = confirm(
+            'This will permanently delete ALL protected field values.\n\nThis action CANNOT be undone.\n\nDo you want to continue?'
+        );
+
+        if (!firstConfirm) return;
+
+        const secondConfirm = confirm(
+            'FINAL WARNING:\n\nProtected data will be erased forever.\n\nPress OK to confirm.'
+        );
+
+        if (!secondConfirm) return;
+
+        wipeProtectedData();
+    });
+
 
 
     function loadFields() {
@@ -83,11 +140,15 @@ document.addEventListener('DOMContentLoaded', function () {
     function renderFields() {
         fieldsContainer.innerHTML = '';
 
-        fields.forEach(field => {
+        const pinnedFields = fields.filter(f => f.pinned);
+        const normalFields = fields.filter(f => !f.pinned);
+
+        [...pinnedFields, ...normalFields].forEach(field => {
             const fieldElement = createFieldElement(field);
             fieldsContainer.appendChild(fieldElement);
         });
     }
+
 
     function createFieldElement(field) {
         const fieldDiv = document.createElement('div');
@@ -100,10 +161,17 @@ document.addEventListener('DOMContentLoaded', function () {
           <div class="field-header">
             <span class="field-title">${field.label}</span>
             <div class="field-buttons">
+                <button
+                    class="fav-btn btn-star ${field.pinned ? 'active' : ''}"
+                    title="${field.pinned ? 'Unpin field' : 'Pin field'}"
+                    >
+                    <i class="${field.pinned ? 'fa-solid fa-star' : 'fa-regular fa-star'}"></i>
+                </button>
+
                 ${!field.protected ? `
-                    <button class="btn btn-copy" aria-label="Copy ${field.label}" title="Copy to clipboard">📋</button>
+                    <button class="btn btn-copy" aria-label="Copy ${field.label}" title="Copy to clipboard"><i class="fa-regular fa-clipboard"></i></button>
                 ` : ''}
-                <button class="btn btn-delete" aria-label="Delete ${field.label}" title="Delete field">❌</button>
+                <button class="btn btn-delete" aria-label="Delete ${field.label}" title="Delete field"><i class="fa-regular fa-circle-xmark"></i></button>
             </div>
           </div>
          <div class="field-content">
@@ -117,6 +185,23 @@ document.addEventListener('DOMContentLoaded', function () {
             // Add event listeners for copy and delete buttons
             const copyBtn = fieldDiv.querySelector('.btn-copy');
             const deleteBtn = fieldDiv.querySelector('.btn-delete');
+            const starBtn = fieldDiv.querySelector('.btn-star');
+
+            if (starBtn) {
+                starBtn.addEventListener('click', () => {
+                    const fieldIndex = fields.findIndex(f => f.id === field.id);
+                    if (fieldIndex === -1) return;
+
+                    fields[fieldIndex].pinned = !fields[fieldIndex].pinned;
+
+                    chrome.storage.local.set({ fields }, () => {
+                        renderFields();
+                        showNotification(
+                            fields[fieldIndex].pinned ? 'Field pinned ⭐' : 'Field unpinned'
+                        );
+                    });
+                });
+            }
 
             if (copyBtn) {
                 copyBtn.addEventListener('click', function () {
@@ -176,8 +261,48 @@ document.addEventListener('DOMContentLoaded', function () {
             <label class="input-label" for="protec">
                 Protected
             </label>
-        </div>
+            </div>
+            <button class="btn btn-save btn-save-field">
+                <span class="btn-icon"><i class="fa-regular fa-floppy-disk"></i></span>
+                <span class="btn-text">Save</span>
+            </button>
         `;
+
+            const saveFieldBtn = fieldDiv.querySelector('.btn-save-field');
+
+            saveFieldBtn.addEventListener('click', () => {
+                const labelInput = fieldDiv.querySelector('.field-label-input');
+                const valueInput = fieldDiv.querySelector('.field-value-input');
+                const protectedCheckbox = fieldDiv.querySelector('.field-protected-checkbox');
+
+                const fieldIndex = fields.findIndex(f => f.id === field.id);
+                if (fieldIndex === -1) return;
+
+                fields[fieldIndex].label = labelInput.value;
+                fields[fieldIndex].value = valueInput.value;
+
+                if(fields[fieldIndex].label === ''){
+                    showNotification('Please enter a Label before saving');
+                }
+                else if(fields[fieldIndex].value === ''){
+                    showNotification('Please enter a Value before saving');
+                }
+                else{
+                    if (protectedCheckbox?.checked && !PASSWORD) {
+                        showNotification('Set a password to use protected fields');
+                        fields[fieldIndex].protected = false;
+                    } else {
+                        fields[fieldIndex].protected = protectedCheckbox?.checked || false;
+                    }
+    
+                    fields[fieldIndex].locked = true; // 🔒 ONLY THIS FIELD
+    
+                    chrome.storage.local.set({ fields }, () => {
+                        renderFields();
+                        showNotification('Field saved');
+                    });
+                }
+            });
         }
 
         return fieldDiv;
@@ -208,7 +333,8 @@ document.addEventListener('DOMContentLoaded', function () {
             value: '',
             locked: false,
             isDefault: false,
-            protected: false
+            protected: false,
+            pinned: false
         };
 
         fields.push(newField);
@@ -237,7 +363,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (fieldIndex !== -1) {
                     fields[fieldIndex].label = labelInput.value;
                     fields[fieldIndex].value = valueInput.value;
-                    fields[fieldIndex].protected = protectedCheckbox?.checked || false;
+                    if (protectedCheckbox?.checked && !PASSWORD) {
+                        showNotification('Set a password to use protected fields');
+                        fields[fieldIndex].protected = false;
+                    } else {
+                        fields[fieldIndex].protected = protectedCheckbox?.checked || false;
+                    }
+
                     fields[fieldIndex].locked = true; // Lock the field after saving
                 }
             }
@@ -285,11 +417,17 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function showNotification(message) {
+        if (notificationTimeout) {
+            clearTimeout(notificationTimeout);
+            notificationTimeout = null;
+        }
+
         notificationText.textContent = message;
         notification.classList.add('show');
 
-        setTimeout(() => {
+        notificationTimeout = setTimeout(() => {
             notification.classList.remove('show');
+            notificationTimeout = null;
         }, 2000);
     }
 
@@ -336,6 +474,46 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         };
         reader.readAsText(file);
+    }
+
+    function verifyPasswordOrFail(actionName = 'perform this action') {
+        if (!PASSWORD) return true; // No password set → allow
+
+        const entered = prompt(`Enter password to ${actionName}:`);
+        if (entered === PASSWORD) return true;
+
+        showNotification('Incorrect password');
+        return false;
+    }
+
+    function wipeProtectedData() {
+        let modified = false;
+
+        fields = fields.map(field => {
+            if (field.protected) {
+                modified = true;
+                return {
+                    ...field,
+                    value: '',
+                    locked: true,
+                    protected: false
+                };
+            }
+            return field;
+        });
+
+        PASSWORD = '';
+        chrome.storage.local.set(
+            {
+                fields: fields,
+                password: ''
+            },
+            () => {
+                renderFields();
+                settingsModal.classList.remove('show');
+                showNotification('Protected fields wiped and password reset');
+            }
+        );
     }
 
 });

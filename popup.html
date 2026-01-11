@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="css/main.css" />
     <link rel="stylesheet" href="css/components.css" />
     <link rel="stylesheet" href="css/animations.css" />
+    <link rel="stylesheet" href="assets/fontawesome/css/all.min.css" />
   </head>
   <body>
     <div class="container">
@@ -20,7 +21,7 @@
         <h1>
           🔒 ClipBoarded
           <button id="openSettings" class="btn btn-settings" title="Settings">
-            ⚙️
+            <i class="fa-solid fa-gears" style="color: #ffffff"></i>
           </button>
         </h1>
         <div class="search-container">
@@ -38,18 +39,14 @@
       <div class="actions">
         <button id="addField" class="btn btn-add">
           <span class="btn-icon">+</span>
-          <span class="btn-text">Add Field</span>
-        </button>
-        <button id="save" class="btn btn-save">
-          <span class="btn-icon">💾</span>
-          <span class="btn-text">Save</span>
+          <span class="btn-text">Field</span>
         </button>
         <button id="export" class="btn btn-secondary">
-          <span class="btn-icon">⬇️</span>
+          <span class="btn-icon"><i class="fa-solid fa-download"></i></span>
           <span class="btn-text">Export</span>
         </button>
         <button id="import" class="btn btn-secondary">
-          <span class="btn-icon">⬆️</span>
+          <span class="btn-icon"><i class="fa-solid fa-upload"></i></span>
           <span class="btn-text">Import</span>
         </button>
         <input
@@ -68,15 +65,34 @@
     <div id="settingsModal" class="modal">
       <div class="modal-content">
         <h2>Settings</h2>
-        <label for="passwordInput">Set/Change Password:</label>
-        <input
-          type="password"
-          id="passwordInput"
-          placeholder="Enter password"
-        />
+        <div class="input-group">
+          <label>Current Password</label>
+          <input
+            type="password"
+            id="currentPasswordInput"
+            placeholder="Enter current password"
+          />
+        </div>
+
+        <div class="input-group">
+          <label>New Password</label>
+          <input
+            type="password"
+            id="newPasswordInput"
+            placeholder="Enter new password"
+          />
+        </div>
+
         <div class="modal-actions">
           <button id="savePassword" class="btn btn-save">Save</button>
           <button id="cancelSettings" class="btn btn-cancel">Cancel</button>
+        </div>
+
+        <div class="danger-zone">
+          <hr />
+          <button id="wipeProtected" class="btn btn-delete">
+            Forgot Password? Wipe Protected Fields
+          </button>
         </div>
       </div>
     </div>

@@ -6,13 +6,24 @@
 
 ## Latest Version Updates
 
-**v1.2.0 – Security Update (July 2025)**  
-- 🔐 **Protected Fields**: Mark fields as protected so their values remain hidden by default.  
-- 👁️ **Password-Gated Reveal**: Eye icon reveals value after password validation.  
-- 🚫 **Copy Blocked Until Unlocked**: Protected fields hide the copy button unless unlocked.  
-- 🛡️ **Password Management**: New ⚙️ Settings modal allows users to set/change their local password.  
-- 📤 **Export to JSON**: Download saved fields to a `.json` file.  
-- 📥 **Import from JSON**: Restore fields from a backup file.  
+**v1.3.0 – Security & UX Improvements (Jan 2026)**  
+- 🔐 **Improved Password System**  
+  - Password setup and reset flow redesigned to be more secure  
+  - Prevents unauthorized password changes  
+  - Clear onboarding prompt for first-time users to set a password  
+
+- ⭐ **Pin Important Fields**  
+  - Pin frequently used fields to keep them always at the top  
+  - Visual star indicator for pinned vs unpinned fields  
+
+- 📤 **Password-Protected Export**  
+  - Exporting data now requires password verification  
+  - Prevents accidental or unauthorized data leaks  
+
+- 🎨 **UI & Layout Enhancements**  
+  - Improved field layout and spacing  
+  - Consistent icon set across the extension  
+  - Fixed icon rendering issues
 
 👉 [View all releases](https://github.com/NavinSubramanian/Clipboarded/releases)
 
@@ -21,12 +32,16 @@
 ## ✨ Features
 
 - ✅ **Predefined Fields**: Starts with basic fields like Name and Phone Number.
-- ➕ **Custom Fields**: Add any number of new label-value pairs as needed.
-- 🔒 **Locked After Save**: Once saved, fields become non-editable to prevent accidental changes.
-- 📋 **One-Click Copy**: Instantly copy any value with a single click.
-- ❌ **Delete Fields**: Remove unused fields when they're no longer needed.
-- 💾 **Persistent Storage**: All fields are saved in Chrome’s local storage.
-- 🖥️ **Sleek UI**: Dark theme, responsive layout, and minimal design with scrollable fields.
+- ➕ **Custom Fields**: Add unlimited label–value pairs.
+- 🔒 **Protected Fields**: Secure selected fields with a password.
+- 👁️ **Password-Gated Reveal**: Reveal protected values only after authentication.
+- 📤 **Secure Export**: Export data only after password verification.
+- ⭐ **Pin Fields**: Keep important fields pinned at the top.
+- 🔐 **Locked After Save**: Fields lock automatically after saving.
+- 📋 **One-Click Copy**: Copy values instantly when unlocked.
+- ❌ **Delete Fields**: Remove unwanted fields safely.
+- 💾 **Local-Only Storage**: All data stays on your device—no servers, no tracking.
+- 🖥️ **Clean Dark UI**: Minimal, fast, and distraction-free.
 
 ---
 
@@ -67,6 +82,7 @@ clipboarded/
 - **CSS3** – Sleek, modern dark UI with scrollable sections
 - **JavaScript (Vanilla)** – Logic for storage, DOM interaction, and clipboard
 - **Chrome Extension API v3** – Modern and secure extension architecture
+- **Fontawesome** - Library used for the icon style
 
 ---
 

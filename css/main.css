@@ -71,15 +71,14 @@ h1 {
 #fieldsContainer {
   flex: 1;
   overflow-y: auto;
-  margin-bottom: var(--space-md);
   padding-right: var(--space-xs);
 }
 
 .actions {
   display: flex;
   gap: var(--space-md);
-  margin-bottom: var(--space-md);
   overflow-x: scroll;
+  padding-top: 5px;
   padding-bottom: 5px;
 }
 
