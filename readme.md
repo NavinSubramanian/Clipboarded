@@ -6,7 +6,7 @@
 
 ## Latest Version Updates
 
-**v1.4.0 – Organization Update (Jan 2026)**  
+**v1.4.1 – Organization Update (Jan 2026)**  
 - 🏷️ **Added Tags**  
   - Now you can add tags to the field and save them
   - Near the search filter you can view the different tags present
@@ -17,9 +17,10 @@
   - Made the save button bigger
   - Few more UI modification
 
-- 📤 **Future Enhancement on Development**
+- 💡 **Light Theme Beta Version is Here**
   - The feature to toggle between Light and Dark theme (For any Light theme freaks!)
-  - Testing on the UI
+  - Still unsure on the color comp
+  - Would love to hear suggestions
 
 👉 [View all releases](https://github.com/NavinSubramanian/Clipboarded/releases)
 
@@ -39,6 +40,7 @@
 - ❌ **Delete Fields**: Remove unwanted fields safely.
 - 💾 **Local-Only Storage**: All data stays on your device—no servers, no tracking.
 - 🖥️ **Clean Dark UI**: Minimal, fast, and distraction-free.
+- 💡 **Light Theme Toggle**: For any light theme lovers(🤨).
 
 ---
 

@@ -7,6 +7,8 @@
   --text-primary: #f1f1f1;
   --text-secondary: #b0b0b0;
 
+  --bg-settings-modal: #1e1e1e;
+  --btn-bg-trans: linear-gradient(135deg, #1a1a1a, #2a2a2a);
   --btn-setting: #ffffff;
   
   --accent-blue: #00bcd4;
@@ -34,13 +36,15 @@
 
 /* Light theme overrides */
 body.light-theme {
-  --bg-primary: #f0f2f5; /* main background */
+  --bg-primary: #e6e6eb; /* main background */
   --bg-secondary: #ffffff; /* field background */
   --bg-tertiary: #f9f9f9; /* secondary panels / modals */
+  --bg-settings-modal: #dbdbdb;
 
   --text-primary: #1a1a1a; /* main text */
   --text-secondary: #555555; /* secondary text */
 
+  --btn-bg-trans: linear-gradient(135deg, #f7f7f7, #d5d5d5);
   --btn-setting: #333;
 
   --accent-blue: #007acc; /* clipboard / copy buttons */
@@ -134,16 +138,16 @@ h1 {
   padding: 4px 10px;
   border-radius: 999px;
   font-size: 11px;
-  background: #1f1f1f;
+  background: var(--bg-primary);
   border: 1px solid #333;
-  color: #ccc;
+  color: var(--text-primary);
   cursor: pointer;
 }
 
 .tag-filter.active {
-  background: #3a3a3a;
-  color: #fff;
-  border-color: #555;
+  background: var(--btn-setting);
+  color: var(--bg-tertiary);
+  border-color: var(--text-secondary);
 }
 
 footer {

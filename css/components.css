@@ -21,7 +21,7 @@
 }
 
 .btn-add {
-  background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+  background: var(--btn-bg-trans);
   border: 1px solid var(--accent-blue);
   color: var(--accent-blue);
   flex: 1;
@@ -33,7 +33,7 @@
 }
 
 .btn-save {
-  background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+  background: var(--btn-bg-trans);
   border: 1px solid var(--accent-green);
   width: 100%;
   color: var(--accent-green);
@@ -221,7 +221,9 @@ input::placeholder {
   bottom: -60px;
   left: 50%;
   transform: translateX(-50%);
-  background-color: rgba(40, 40, 40, 0.9);
+  /* background-color: rgba(40, 40, 40, 0.9); */
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--accent-red);
   color: var(--text-primary);
   padding: var(--space-sm) var(--space-lg);
   border-radius: var(--radius-md);
@@ -254,7 +256,7 @@ input::placeholder {
 }
 
 .modal-content {
-  background: var(--bg-secondary);
+  background: var(--bg-settings-modal);
   border: 1px solid var(--accent-red);
   color: var(--text-primary);
   border-radius: var(--radius-lg);
@@ -286,6 +288,7 @@ input::placeholder {
 .container header h1 {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   column-gap: 5px;
 }
 
@@ -387,12 +390,10 @@ input::placeholder {
   padding: 3px 8px;
   border-radius: 999px;
   font-size: 11px;
-  background: #2a2a2a;
   border: 1px solid #333;
   background: var(--bg-tertiary);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  color: var(--text-primary);
-  color: #ddd;
+  border: 1px solid var(--text-secondary);
+  color: var(--text-secondary);
 }
 
 .tag-chip .remove-tag {
@@ -446,4 +447,10 @@ input::placeholder {
 
 .btn-settings {
   color: var(--btn-setting);
+}
+
+.settings-header{
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
