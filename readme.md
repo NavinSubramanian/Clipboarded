@@ -2,11 +2,15 @@
 
 **ClipBoarded** is a lightweight, stylish Chrome extension that helps you store and quickly copy your most frequently used personal information—like your name, phone number, email, LinkedIn profile, and more. Whether you're job hunting, filling out forms, or registering for services, ClipBoarded makes it easy to manage and access your essential info.
 
+⚠️ **Beta Notice**
+This is a beta release. While ClipBoarded is stable, you may encounter minor UI or UX issues.
+Please report bugs or suggestions via GitHub Issues.
+
 ---
 
 ## Latest Version Updates
 
-**v1.4.1 – Organization Update (Jan 2026)**  
+**v1.4.1 – Organization Update (Jan 2026) - Beta Release**  
 - 🏷️ **Added Tags**  
   - Now you can add tags to the field and save them
   - Near the search filter you can view the different tags present
